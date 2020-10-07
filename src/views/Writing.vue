@@ -90,7 +90,7 @@
         v-b-tooltip.top.hover
         :title="userNome"
       >
-        <b-icon icon="person-fill"></b-icon>
+        <font-awesome-icon icon="user-alt" />
       </div>
 
       <div id="user" class="user mt-2" v-else>
@@ -151,13 +151,21 @@
 
 <script>
 // @ is an alias to /src
-import DadosBasicos from "./../components/DadosBasicos";
-import ItensDespachoComponent from "./../components/ItensDespachoComponent";
+import DadosBasicos from "./../components/DadosBasicos.vue";
+import ItensDespachoComponent from "./../components/ItensDespachoComponent.vue";
 import { mapGetters, mapActions } from "vuex";
-import NewUser from "./../components/FormNewUser";
-import Observacoes from "./../components/TextAreaObservacoes";
-import AuxButtons from "./../components/AuxButtons";
-import { doFetch } from "./../../utils/FetchFactory";
+import NewUser from "./../components/FormNewUser.vue";
+import Observacoes from "./../components/TextAreaObservacoes.vue";
+import AuxButtons from "./../components/AuxButtons.vue";
+import { doFetch } from "./../../utils/FetchFactory.js";
+import { dev, prod } from "./../../auxiliarInterno.js";
+
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+library.add(faUserAlt);
+
 import {
   setCookie,
   deleteCookies,
@@ -203,14 +211,20 @@ export default {
       }
 
       const bodyData = new FormData();
-      bodyData.append("flag", "recupera_sessao");
+      bodyData.append("flag", "recupera_sessao_new");
       bodyData.append("matricula", matricula);
 
-      const url =
-        "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php";
+      const url = dev
+        ? "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php"
+        : "../ajax/manter_sessao_dados_usuario.php";
+
+      console.log(url);
+
       const method = "POST";
 
       const user = doFetch(url, method, bodyData);
+
+      this.fetching = true;
 
       user
         .then((m) => {
@@ -244,6 +258,7 @@ export default {
               }
             );
           }
+          this.fetch = false;
         })
         .catch((err) => {
           this.$bvToast.toast(err, {
@@ -251,6 +266,7 @@ export default {
             variant: "danger",
             solid: true,
           });
+          this.fetch = false;
         });
     },
 
@@ -326,6 +342,7 @@ export default {
     NewUser,
     Observacoes,
     AuxButtons,
+    FontAwesomeIcon,
   },
   mounted() {
     // const user = this.getCookie("userNome");
@@ -340,7 +357,12 @@ export default {
     // console.log("load/reload...");
 
     this.$refs["modal-1"].show();
-    const url = "http://localhost/teletrabalho/util/RecuperaTexto.php";
+
+    const url = dev
+      ? "http://localhost/teletrabalho/ajax/RecuperaTextoDespacho.php"
+      : "../ajax/RecuperaTextoDespacho.php";
+
+    console.log(url);
 
     const texto = doFetch(url, "POST", {});
 

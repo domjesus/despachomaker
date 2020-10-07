@@ -18,7 +18,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import DetailsAndOcorrences from "./DetailsAndOcorrences";
+import DetailsAndOcorrences from "./DetailsAndOcorrences.vue";
 
 export default {
   name: "ItensDespachoComponent",

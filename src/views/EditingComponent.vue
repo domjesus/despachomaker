@@ -73,8 +73,7 @@
     <div class="textos">
       <h4>
         Assunto: Trata-se de requerimento de {{ especieExtenso }} o qual foi
-        {{ conclusao.decisao }}, tendo em vista
-        {{ conclusao.descricao.split("-")[0] || conclusao.descricao }}, com
+        {{ conclusao.decisao }}, tendo em vista {{ trataConclusao }}, com
         fundamento no {{ conclusao.norma }}.
       </h4>
 
@@ -109,7 +108,9 @@
           title="Voltar para edição."
           class="btn btn-md span-edit"
         >
-          <b-icon icon="arrow-left-circle" class="span-edit"></b-icon>
+          <span class="span-edit">
+            <font-awesome-icon icon="arrow-left" />
+          </span>
         </button>
       </router-link>
     </div>
@@ -121,17 +122,27 @@
           title="Voltar para edição."
           class="btn btn-sm"
         >
-          <b-icon icon="arrow-left-circle" class="span-edit"></b-icon>
+          <span class="span-edit">
+            <font-awesome-icon icon="arrow-left" size="lg" />
+          </span>
         </button>
       </router-link>
 
-      <b-icon icon="printer" @click="print" class="print no-print"></b-icon>
+      <div @click="print">
+        <font-awesome-icon icon="print" size="lg" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
+
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faArrowLeft, faPrint } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+library.add(faArrowLeft, faPrint);
 
 export default {
   name: "EditingComponent",
@@ -163,6 +174,15 @@ export default {
       obsGerais: "getObsGerais",
       conclusao: "getConclusao",
     }),
+    trataConclusao() {
+      const conclusaotmp = this.conclusao.descricao;
+      // const conclusao = this.$store.getConclusao();
+      if (!conclusaotmp) return "MOTIVO DE CONCLUSÃO NÃO INFORMADO";
+
+      return conclusaotmp.split("-")
+        ? conclusaotmp.split("-")[0]
+        : conclusaotmp.descricao;
+    },
   },
   methods: {
     print() {
@@ -170,12 +190,17 @@ export default {
     },
   },
   mounted() {
+    // console.log(this.$store);
+
     const elements = document.querySelectorAll(
       ".vinculos,.recolhimentos,.ppp,.rural,.dependentes,.bpc,.obsGerais"
     );
     elements.forEach((el) => el.setAttribute("contenteditable", "true"));
 
     // console.log(elements);
+  },
+  components: {
+    FontAwesomeIcon,
   },
 };
 </script>

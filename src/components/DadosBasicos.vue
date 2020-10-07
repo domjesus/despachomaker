@@ -143,7 +143,8 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import axios from "axios";
-import { doFetch } from "./../../utils/FetchFactory";
+import { doFetch } from "./../../utils/FetchFactory.js";
+import { dev, prod } from "./../../auxiliarInterno.js";
 
 export default {
   data() {
@@ -155,7 +156,7 @@ export default {
         { value: "INDEF", text: "Indeferimento" },
       ],
       fundamentacoes: "",
-      fundamentacao: {
+      conclusao: {
         descricao: "",
         norma: "",
         decisao: "",
@@ -188,10 +189,10 @@ export default {
     setaFundamentacao(e) {
       // console.log(this.fundamentacao);
 
-      this.fundamentacao.descricao = e.target.value;
-      this.fundamentacao.norma = e.target.title;
+      this.conclusao.descricao = e.target.value;
+      this.conclusao.norma = e.target.title;
 
-      this.$store.dispatch("changeConclusao", this.fundamentacao);
+      this.$store.dispatch("changeConclusao", this.conclusao);
       this.$refs["modal-fundamentacoes"].hide();
     },
     showFormDecisao() {
@@ -201,13 +202,14 @@ export default {
         bodyData.append("flag", "povoa_despacho_new");
         bodyData.append("fund_tipo", this.decisao);
 
-        this.fundamentacao.decisao =
+        this.conclusao.decisao =
           this.decisao == "CONC" ? "CONCEDIDO" : "INDEFERIDO";
 
         this.$store.dispatch("changeConclusao", this.conclusao);
 
-        const url =
-          "http://localhost/teletrabalho/ajax/manter_fundamentacao.php";
+        const url = dev
+          ? "http://localhost/teletrabalho/ajax/manter_fundamentacao.php"
+          : "../ajax/manter_fundamentacao.php";
 
         this.$refs["modal-fundamentacoes"].show();
 
@@ -229,7 +231,7 @@ export default {
       bodyData.append("especie_nr", value);
 
       const options = {
-        url: "http://localhost/teletrabalho/ajax/manter_fundamentacao.php",
+        url: "../ajax/manter_fundamentacao.php",
         method: "POST",
         headers: {
           Accept: "application/json",
