@@ -13,6 +13,8 @@
             id="especie"
             :value="especie"
             @keyup="workInEspecie($event.target.value)"
+            v-mask="'##'"
+            placeholder="Especie nº"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -33,12 +35,14 @@
 
     <div class="row mt-3">
       <div class="col col-md-4">
-        <b-input-group size="md" prepend="NB" title="Número de Benefício">
+        <b-input-group size="md" prepend="NB">
           <b-form-input
             name="numeroBeneficio"
             id="numeroBeneficio"
             :value="numeroBeneficio"
             @keyup="changeNb($event.target.value)"
+            v-mask="'###.###.###-#'"
+            placeholder="000.000.000-0"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -142,9 +146,9 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
-import axios from "axios";
 import { doFetch } from "./../../utils/FetchFactory.js";
-import { dev, prod } from "./../../auxiliarInterno.js";
+import { dev } from "./../../auxiliarInterno.js";
+import { mask } from "vue-the-mask";
 
 export default {
   data() {
@@ -206,6 +210,7 @@ export default {
           this.decisao == "CONC" ? "CONCEDIDO" : "INDEFERIDO";
 
         this.$store.dispatch("changeConclusao", this.conclusao);
+        this.$emit("fetchingfundamentacao");
 
         const url = dev
           ? "http://localhost/teletrabalho/ajax/manter_fundamentacao.php"
@@ -218,6 +223,7 @@ export default {
         resp.then((r) => {
           // console.log(r.data);
           this.fundamentacoes = r.data;
+          this.$emit("fetchedfundamentacao");
         });
       }
     },
@@ -230,18 +236,12 @@ export default {
       bodyData.append("flag", "recupera_especie");
       bodyData.append("especie_nr", value);
 
-      const options = {
-        url: "../ajax/manter_fundamentacao.php",
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-        data: bodyData,
-      };
+      const url = dev
+        ? "http://localhost/teletrabalho/ajax/manter_fundamentacao.php"
+        : "../ajax/manter_fundamentacao.php";
 
       if (value.length == 2) {
-        const esp_extenso = axios(options);
+        const esp_extenso = doFetch(url, "POST", bodyData);
 
         esp_extenso.then((e) => {
           // console.log(e.data);
@@ -249,6 +249,9 @@ export default {
         });
       }
     },
+  },
+  directives: {
+    mask,
   },
 };
 </script>

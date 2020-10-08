@@ -90,6 +90,18 @@
       <div class="obsGerais mt-3" v-show="obsGerais">
         Obs Gerais: {{ obsGerais }}
       </div>
+
+      <div class="ts mt-3" v-show="tsAnos && tsMeses && tsDias">
+        O tempo comprovado foi de {{ tsAnos }} anos, {{ tsMeses }} mes(es) e
+        {{ tsDias }} dia(s).
+      </div>
+
+      <div class="carencia mt-3" v-show="tsCarencia">
+        A carência comprovada foi de {{ tsCarencia }} contribuição(ões).
+      </div>
+      <div class="conclusao">
+        Considerando o exposto o benefício foi {{ conclusao.decisao }}
+      </div>
     </div>
 
     <div id="servidor_aux" class="mt-5" v-if="userNome">
@@ -141,6 +153,7 @@ import { mapGetters } from "vuex";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faArrowLeft, faPrint } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { dev } from "../../auxiliarInterno";
 
 library.add(faArrowLeft, faPrint);
 
@@ -173,6 +186,10 @@ export default {
       obsBpc: "getObsBpc",
       obsGerais: "getObsGerais",
       conclusao: "getConclusao",
+      tsAnos: "getAnos",
+      tsMeses: "getMeses",
+      tsDias: "getDias",
+      tsCarencia: "getCarencia",
     }),
     trataConclusao() {
       const conclusaotmp = this.conclusao.descricao;
@@ -189,13 +206,21 @@ export default {
       window.print();
     },
   },
+  beforeRouteLeave(to, from, next) {
+    if (confirm("Caso tenha editado o texto ele não será salvo. Confirma?"))
+      next();
+  },
   mounted() {
     // console.log(this.$store);
 
     const elements = document.querySelectorAll(
-      ".vinculos,.recolhimentos,.ppp,.rural,.dependentes,.bpc,.obsGerais"
+      ".vinculos,.recolhimentos,.ppp,.rural,.dependentes,.bpc,.obsGerais,.ts,.carencia,.conclusao"
     );
-    elements.forEach((el) => el.setAttribute("contenteditable", "true"));
+    elements.forEach((el) => {
+      el.setAttribute("contenteditable", "true");
+      el.setAttribute("v-b-tooltip.top", "true");
+      el.setAttribute("title", "Para editar clique em cima do texto!");
+    });
 
     // console.log(elements);
   },
@@ -264,6 +289,10 @@ label {
 @media print {
   .no-print {
     display: none;
+  }
+  input {
+    background: none;
+    border: none;
   }
 }
 

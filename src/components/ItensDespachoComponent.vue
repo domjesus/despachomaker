@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex";
+import { mapActions } from "vuex";
 import DetailsAndOcorrences from "./DetailsAndOcorrences.vue";
 
 export default {

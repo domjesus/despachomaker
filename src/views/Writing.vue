@@ -5,7 +5,12 @@
     <b-card no-body>
       <b-tabs pills card>
         <b-tab title="Dados Cadastrais" active>
-          <dados-basicos />
+          <dados-basicos
+            @fetchingfundamentacao="
+              showBlockUI('Pesquisando fundamentações...')
+            "
+            @fetchedfundamentacao="hideBlockUI()"
+          />
         </b-tab>
         <b-tab title="Vínculos">
           <itens-despacho-component
@@ -101,6 +106,7 @@
               id="matricula"
               placeholder="Matricula"
               class="form-control"
+              v-mask="'#######'"
             />
             <b-input-group-append>
               <b-button
@@ -140,7 +146,7 @@
           hide-footer
           title="Pesquisando"
         >
-          <p>Recuperando textos...</p>
+          <p>{{ messageFetching }}...</p>
           <b-spinner label="Loading..."></b-spinner>
         </b-modal>
       </div>
@@ -158,7 +164,10 @@ import NewUser from "./../components/FormNewUser.vue";
 import Observacoes from "./../components/TextAreaObservacoes.vue";
 import AuxButtons from "./../components/AuxButtons.vue";
 import { doFetch } from "./../../utils/FetchFactory.js";
-import { dev, prod } from "./../../auxiliarInterno.js";
+
+import { mask } from "vue-the-mask";
+
+import { dev } from "./../../auxiliarInterno.js";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faUserAlt } from "@fortawesome/free-solid-svg-icons";
@@ -184,7 +193,7 @@ export default {
       dependentes: [],
       bpc: [],
       btnAuxiliares: [],
-      fetching: false,
+      messageFetching: "",
       error: false,
       errorMsg: "",
       textos: [],
@@ -193,7 +202,16 @@ export default {
   },
   methods: {
     ...mapActions(["changeUsuarioInfos", "changeTextos"]),
+    showBlockUI(message) {
+      this.messageFetching = message;
 
+      // setTimeout(() => {
+      this.$refs["modal-1"].show();
+      // }, 3000);
+    },
+    hideBlockUI() {
+      this.$refs["modal-1"].hide();
+    },
     showFormToNewUser() {
       this.addNewUser = Math.random(1, 1000);
     },
@@ -218,14 +236,17 @@ export default {
         ? "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php"
         : "../ajax/manter_sessao_dados_usuario.php";
 
-      console.log(url);
+      // console.log(url);
 
       const method = "POST";
 
+      this.showBlockUI("Carregando usuário!");
+
+      // setTimeout(() => {
+      //   console.log(user);
+      // }, 3000);
+
       const user = doFetch(url, method, bodyData);
-
-      this.fetching = true;
-
       user
         .then((m) => {
           // console.log("retorno BD: ");
@@ -258,7 +279,8 @@ export default {
               }
             );
           }
-          this.fetch = false;
+
+          this.hideBlockUI();
         })
         .catch((err) => {
           this.$bvToast.toast(err, {
@@ -266,7 +288,7 @@ export default {
             variant: "danger",
             solid: true,
           });
-          this.fetch = false;
+          this.hideBlockUI();
         });
     },
 
@@ -334,6 +356,9 @@ export default {
       olNumero: "getOlNumero",
       olNome: "getOlNome",
       conclusao: "getConclusao",
+      especie: "getEspecie",
+      nb: "getNb",
+      nomeSegurado: "getNome",
     }),
   },
   components: {
@@ -356,13 +381,11 @@ export default {
     // this.$store.dispatch("changeJustFetched", true);
     // console.log("load/reload...");
 
-    this.$refs["modal-1"].show();
+    this.showBlockUI("Carregando textos!");
 
     const url = dev
       ? "http://localhost/teletrabalho/ajax/RecuperaTextoDespacho.php"
       : "../ajax/RecuperaTextoDespacho.php";
-
-    console.log(url);
 
     const texto = doFetch(url, "POST", {});
 
@@ -375,7 +398,7 @@ export default {
 
         this.filterItens();
         // this.itens = t.data.vinculos;
-        this.$refs["modal-1"].hide();
+        this.hideBlockUI();
       })
       .catch((err) => {
         this.error = true;
@@ -390,6 +413,36 @@ export default {
     // }
 
     // console.log(this.textosFetched);
+  },
+  directives: {
+    mask,
+  },
+  beforeRouteLeave(to, from, next) {
+    // console.log(this.$store);
+    let fields = [];
+
+    this.especie == "" ? fields.push("Espécie") : "";
+    this.nb == "" ? fields.push("Número de Benefício") : "";
+    this.nomeSegurado == "" ? fields.push("Nome do Segurado") : "";
+
+    !this.conclusao.decisao ||
+    !this.conclusao.descricao ||
+    !this.conclusao.norma
+      ? fields.push("Decisão")
+      : "";
+
+    fields.map((f) => {
+      this.$bvToast.toast(`Falta informar o campo ${f}`, {
+        title: `Preencha ${f}`,
+        autoHideDelay: 5000,
+        variant: "danger",
+        appendToast: true,
+      });
+
+      return;
+    });
+
+    return !fields.length ? next() : null059841;
   },
 };
 </script>

@@ -13,7 +13,8 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@fortawesome/vue-fontawesome": "2",
     "axios": "^0.20.0",
-    "bootstrap": "^4.5.2"
+    "bootstrap": "^4.5.2",
+    "vue-the-mask": "^0.11.1"
   },
   "devDependencies": {
     "@babel/core": "^7.10.1",

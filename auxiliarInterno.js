@@ -1,4 +1,3 @@
-const dev = true;
-const prod = false;
+const dev = false;
 
-export { dev, prod };
+export { dev };
