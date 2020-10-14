@@ -1,5 +1,19 @@
 <template>
   <div class="main">
+    <div class="divs-hided no-print" v-if="divsHided.length > 0">
+      <p class="bg-info">Textos ocultados. Clique para mostrar</p>
+
+      <div v-for="(div, i) in divsHided" :key="i">
+        <span
+          class="btn btn-success"
+          @click="showDiv(div, i)"
+          style="margin: 10px"
+          title="Clique para mostrar!"
+        >
+          {{ div }} <font-awesome-icon icon="arrow-down" size="lg"
+        /></span>
+      </div>
+    </div>
     <div class="heade-img-locale" v-if="userNome">
       <img src="https://teletrabalho.net/scpr/brasao_pq.png" /><br />
       <p>Instituto Nacional do Seguro Social</p>
@@ -71,24 +85,53 @@
     </div>
 
     <div class="textos">
-      <h4>
+      <h5>
         Assunto: Trata-se de requerimento de {{ especieExtenso }} o qual foi
         {{ conclusao.decisao }}, tendo em vista {{ trataConclusao }}, com
         fundamento no {{ conclusao.norma }}.
-      </h4>
+      </h5>
 
-      <div class="vinculos mt-3">{{ vinculos }} {{ obsVinculos }}</div>
+      <div class="vinculos mt-3">
+        {{ vinculos }} {{ obsVinculos
+        }}<span class="no-print btn btn-danger" @click="hideDiv('vinculos')">
+          <font-awesome-icon icon="minus-circle" size="lg" />
+        </span>
+      </div>
       <div class="recolhimentos mt-3">
-        Recolhimentos: {{ recolhimentos }} {{ obsRecolhimentos }}
+        {{ recolhimentos }} {{ obsRecolhimentos }}
+        <span class="no-print btn btn-danger" @click="hideDiv('recolhimentos')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
       </div>
-      <div class="ppp mt-3">PPP: {{ ppp }} {{ obsPPP }}</div>
-      <div class="rural mt-3">Rural: {{ rural }} {{ obsRural }}</div>
-      <div class="dependentes mt-3">
-        Dependentes: {{ dependentes }} {{ obsDependentes }}
+      <div class="ppp mt-3">
+        {{ ppp }} {{ obsPPP }}
+        <span class="no-print btn btn-danger" @click="hideDiv('ppp')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
       </div>
-      <div class="bpc mt-3">Bpc: {{ bpc }} {{ obsBpc }}</div>
+      <div class="rural mt-3">
+        {{ rural }} {{ obsRural }}
+        <span class="no-print btn btn-danger" @click="hideDiv('rural')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
+      </div>
+      <div class="dependentes mt-3" v-show="dependentes || obsDependentes">
+        {{ dependentes }} {{ obsDependentes }}
+        <span class="no-print btn btn-danger" @click="hideDiv('dependentes')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
+      </div>
+      <div class="bpc mt-3" v-show="bpc || obsBpc">
+        {{ bpc }} {{ obsBpc }}
+        <span class="no-print btn btn-danger" @click="hideDiv('bpc')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
+      </div>
       <div class="obsGerais mt-3" v-show="obsGerais">
         Obs Gerais: {{ obsGerais }}
+        <span class="no-print btn btn-danger" @click="hideDiv('obsGerais')"
+          ><font-awesome-icon icon="minus-circle" size="lg"
+        /></span>
       </div>
 
       <div class="ts mt-3" v-show="tsAnos && tsMeses && tsDias">
@@ -114,17 +157,6 @@
 
     <div class="alert alert-warning no-print" v-else>
       Atenção! Dados do usuário não recuperados!<br />
-      <router-link to="/">
-        <button
-          v-b-tooltip.right.hover
-          title="Voltar para edição."
-          class="btn btn-md span-edit"
-        >
-          <span class="span-edit">
-            <font-awesome-icon icon="arrow-left" />
-          </span>
-        </button>
-      </router-link>
     </div>
 
     <div class="back-to-edit mb-2 no-print">
@@ -134,13 +166,13 @@
           title="Voltar para edição."
           class="btn btn-sm"
         >
-          <span class="span-edit">
+          <span class="span-edit fa-3x">
             <font-awesome-icon icon="arrow-left" size="lg" />
           </span>
         </button>
       </router-link>
 
-      <div @click="print">
+      <div @click="print" class="print fa-3x">
         <font-awesome-icon icon="print" size="lg" />
       </div>
     </div>
@@ -151,14 +183,23 @@
 import { mapGetters } from "vuex";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faArrowLeft, faPrint } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faPrint,
+  faMinusCircle,
+  faArrowDown,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { dev } from "../../auxiliarInterno";
 
-library.add(faArrowLeft, faPrint);
+library.add(faArrowLeft, faPrint, faMinusCircle, faArrowDown);
 
 export default {
   name: "EditingComponent",
+  data() {
+    return {
+      divsHided: [],
+    };
+  },
   computed: {
     ...mapGetters({
       userNome: "getUsuarioNome",
@@ -205,6 +246,18 @@ export default {
     print() {
       window.print();
     },
+    hideDiv(divClassName) {
+      document
+        .querySelector("." + divClassName)
+        .setAttribute("style", "display:none");
+      this.divsHided.push(divClassName);
+    },
+    showDiv(divClassName, i) {
+      document
+        .querySelector("." + divClassName)
+        .setAttribute("style", "display:block");
+      this.divsHided.splice(i, 1);
+    },
   },
   beforeRouteLeave(to, from, next) {
     if (confirm("Caso tenha editado o texto ele não será salvo. Confirma?"))
@@ -242,6 +295,7 @@ export default {
   text-align: left;
   padding: 15px;
   text-align: justify;
+  font-size: 18px;
 }
 .span-edit {
   width: 35px;
@@ -290,6 +344,7 @@ label {
   .no-print {
     display: none;
   }
+
   input {
     background: none;
     border: none;
@@ -298,8 +353,32 @@ label {
 
 .print {
   cursor: pointer;
-  padding-left: 30px;
-  width: 65px;
-  height: 65px;
+  /* padding-left: 30px; */
+  /* width: 65px;
+  height: 65px; */
+}
+h5 {
+  text-align: justify;
+}
+
+.divs-hided {
+  /* display: flex;
+  flex-flow: column; */
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: auto;
+  height: auto;
+  z-index: 1;
+  background-color: floralwhite;
+  padding: 1.5em;
+
+  border: 1px solid black;
+  border-radius: 6px;
+}
+.divs-hided > p {
+  color: #fff;
+  font-weight: bold;
+  padding: 0.8em;
 }
 </style>

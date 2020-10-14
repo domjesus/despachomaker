@@ -12,14 +12,14 @@ function setCookie(data) {
 }
 
 function deleteCookies() {
-  document.cookie = `userIsAuth=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `usuario_nome=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `usuario_matr=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
-  document.cookie = `usuario_cargo=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `gex=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `cidade=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `ol_nome=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-  document.cookie = `ol_numero=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  document.cookie = `userIsAuth=false;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `usuario_nome=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `usuario_matr=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `usuario_cargo=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `gex=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `cidade=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `ol_nome=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
+  document.cookie = `ol_numero=;expires=Thu, 01 Jan 1970 00:00:00 UTC;`;
 }
 
 function getCookie(cname) {

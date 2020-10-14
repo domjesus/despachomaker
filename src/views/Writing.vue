@@ -164,6 +164,7 @@ import NewUser from "./../components/FormNewUser.vue";
 import Observacoes from "./../components/TextAreaObservacoes.vue";
 import AuxButtons from "./../components/AuxButtons.vue";
 import { doFetch } from "./../../utils/FetchFactory.js";
+import { validaNb } from "./../../utils/validaNb.js";
 
 import { mask } from "vue-the-mask";
 
@@ -198,6 +199,7 @@ export default {
       errorMsg: "",
       textos: [],
       addNewUser: 0,
+      isValidNb: false,
     };
   },
   methods: {
@@ -234,7 +236,7 @@ export default {
 
       const url = dev
         ? "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php"
-        : "../ajax/manter_sessao_dados_usuario.php";
+        : "/ajax/manter_sessao_dados_usuario.php";
 
       // console.log(url);
 
@@ -385,7 +387,7 @@ export default {
 
     const url = dev
       ? "http://localhost/teletrabalho/ajax/RecuperaTextoDespacho.php"
-      : "../ajax/RecuperaTextoDespacho.php";
+      : "/ajax/RecuperaTextoDespacho.php";
 
     const texto = doFetch(url, "POST", {});
 
@@ -423,6 +425,20 @@ export default {
 
     this.especie == "" ? fields.push("Espécie") : "";
     this.nb == "" ? fields.push("Número de Benefício") : "";
+
+    this.isValidNb = validaNb(this.nb);
+
+    if (!this.isValidNb) {
+      this.$bvToast.toast(`O número do benefício está inválido/incorreto`, {
+        title: `NB incorreto/inválido`,
+        autoHideDelay: 5000,
+        variant: "danger",
+        appendToast: true,
+      });
+
+      return;
+    }
+
     this.nomeSegurado == "" ? fields.push("Nome do Segurado") : "";
 
     !this.conclusao.decisao ||
@@ -442,7 +458,7 @@ export default {
       return;
     });
 
-    return !fields.length ? next() : null059841;
+    return !fields.length ? next() : null;
   },
 };
 </script>

@@ -3,7 +3,7 @@
     <b-modal
       id="modalNewUser"
       ref="modalNewUser"
-      size="lg"
+      size="xl"
       @ok.prevent="sendForm"
     >
       <h3>Informe os dados abaixo para salvar um novo usuário!</h3>
@@ -32,6 +32,8 @@
             name="usuario_matr"
             class="form-control"
             v-model="user.usuario_matr"
+            v-mask="'#######'"
+            placeholder="números"
           />
         </div>
       </div>
@@ -89,6 +91,8 @@
             name="ol_numero"
             class="form-control"
             v-model="user.ol_numero"
+            v-mask="'##.###.###'"
+            placeholder="00.000.000"
           />
         </div>
       </div>
@@ -96,7 +100,7 @@
         <div class="col col-md-2">
           <label for="ol_nome">OL Nome</label>
         </div>
-        <div class="col col-md-2">
+        <div class="col col-md-4">
           <input
             type="text"
             name="ol_nome"
@@ -110,7 +114,9 @@
 </template>
 
 <script>
-import axios from "axios";
+import { dev } from "../../auxiliarInterno";
+import { doFetch } from "../../utils/FetchFactory";
+import { mask } from "vue-the-mask";
 
 export default {
   name: "FormNewUser",
@@ -136,7 +142,7 @@ export default {
   methods: {
     sendForm() {
       let bodyData = new FormData();
-      bodyData.append("flag", "gravar");
+      bodyData.append("flag", "gravar_new");
       bodyData.append("saveNewUser", "true");
 
       Object.entries(this.user).map((u) => {
@@ -145,18 +151,11 @@ export default {
         bodyData.append(u[0], u[1]);
       });
 
-      const options = {
-        url:
-          "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php",
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json;charset=UTF-8",
-        },
-        data: bodyData,
-      };
+      const url = dev
+        ? "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php"
+        : "/ajax/manter_sessao_dados_usuario.php";
 
-      const newUser = axios(options);
+      const newUser = doFetch(url, "POST", bodyData);
 
       newUser
         .then((res) => {
@@ -165,6 +164,7 @@ export default {
             variant: "success",
             solid: true,
           });
+          this.$refs["modalNewUser"].hide();
         })
         .catch((err) => {
           this.$bvToast.toast(err, {
@@ -182,6 +182,9 @@ export default {
     show() {
       this.$refs["modalNewUser"].show();
     },
+  },
+  directives: {
+    mask,
   },
 };
 </script>

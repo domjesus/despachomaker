@@ -10,7 +10,8 @@ module.exports = {
   entry: "./src/main.js",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: "despacho-script-main.js",
+    chunkFilename: "editing-despacho-script.js",
   },
   module: {
     rules: [
@@ -22,7 +23,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "public/index.html",
+      template: "index.html",
     }),
     new VueLoaderPlugin(),
   ],

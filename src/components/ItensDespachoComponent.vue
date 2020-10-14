@@ -10,7 +10,6 @@
           @click="setValue($event.target, item)"
         />
         {{ item.text }}
-        <details-and-ocorrences :name="item.detail_name" v-if="item.detail" />
       </li>
     </ul>
   </div>
@@ -18,7 +17,6 @@
 
 <script>
 import { mapActions } from "vuex";
-import DetailsAndOcorrences from "./DetailsAndOcorrences.vue";
 
 export default {
   name: "ItensDespachoComponent",
@@ -66,14 +64,22 @@ export default {
       this.$store.dispatch(this.dispatch, target.value);
     },
   },
-  components: {
-    DetailsAndOcorrences,
-  },
 };
 </script>
 
 <style scoped>
 .div-itens {
   text-align: left;
+}
+
+input[type="radio"] {
+  border: 1px;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+ol,
+ul {
+  list-style: outside none none;
 }
 </style>

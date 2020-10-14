@@ -38,13 +38,23 @@
         <b-input-group size="md" prepend="NB">
           <b-form-input
             name="numeroBeneficio"
+            :class="[
+              { 'border border-success alert alert-success': nbIsValid },
+              'border border-danger',
+            ]"
             id="numeroBeneficio"
             :value="numeroBeneficio"
-            @keyup="changeNb($event.target.value)"
+            @keyup="vldNb($event.target.value)"
             v-mask="'###.###.###-#'"
             placeholder="000.000.000-0"
           ></b-form-input>
         </b-input-group>
+        <ToastFactory
+          :message="messageToast"
+          :title="titleToast"
+          :variant="variantToast"
+          v-if="showToast"
+        />
       </div>
     </div>
 
@@ -70,6 +80,7 @@
             id="ts_anos"
             :value="ts_anos"
             @keyup="changeAnos($event.target.value)"
+            v-mask="'##'"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -82,6 +93,7 @@
             id="ts_meses"
             :value="ts_meses"
             @keyup="changeMeses($event.target.value)"
+            v-mask="'##'"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -93,6 +105,7 @@
             id="ts_dias"
             :value="ts_dias"
             @keyup="changeDias($event.target.value)"
+            v-mask="'##'"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -104,6 +117,7 @@
             id="carencia"
             :value="ts_carencia"
             @keyup="changeCarencia($event.target.value)"
+            v-mask="'##'"
           ></b-form-input>
         </b-input-group>
       </div>
@@ -124,18 +138,21 @@
       id="modal-fundamentacoes"
       ref="modal-fundamentacoes"
       title="Fundamentações"
-      size="lg"
+      size="xl"
       hide-footer
     >
-      <div id="fundamentacoes" style="text-align: left">
+      <div id="fundamentacoes" class="fundamentacoes">
         <div v-for="(fund, i) in fundamentacoes" :key="i">
-          <input
-            type="radio"
-            :value="fund.descricao"
-            :title="fund.fundamentacao"
-            name="fundamentacao"
-            @change="setaFundamentacao"
-          />{{ fund.descricao }}
+          <div class="fundamenta-container">
+            <input
+              type="radio"
+              :value="fund.descricao"
+              :title="fund.fundamentacao"
+              name="fundamentacao"
+              @change="setaFundamentacao"
+              class="radio-fundamenta"
+            /><span class="span-fundamenta">{{ fund.descricao }}</span>
+          </div>
         </div>
       </div>
     </b-modal>
@@ -149,6 +166,8 @@ import { mapGetters, mapActions } from "vuex";
 import { doFetch } from "./../../utils/FetchFactory.js";
 import { dev } from "./../../auxiliarInterno.js";
 import { mask } from "vue-the-mask";
+import { validaNb } from "./../../utils/validaNb.js";
+import ToastFactory from "./utils/ToastFactory.vue";
 
 export default {
   data() {
@@ -165,6 +184,11 @@ export default {
         norma: "",
         decisao: "",
       },
+      nbIsValid: false,
+      showToast: false,
+      messageToast: "",
+      titleToast: "",
+      variantToast: "",
     };
   },
   computed: {
@@ -190,6 +214,31 @@ export default {
       "changeDias",
       "changeCarencia",
     ]),
+    vldNb(value) {
+      if (value.length == 13) {
+        this.nbIsValid = validaNb(value);
+
+        if (this.nbIsValid) {
+          this.$store.dispatch("changeNb", value);
+
+          document.querySelector("#numeroBeneficio").removeAttribute("class");
+          document
+            .querySelector("#numeroBeneficio")
+            .setAttribute("class", "border border-success");
+        } else {
+          (this.titleToast = "NB inválido!"),
+            (this.messageToast =
+              "Você informou um número de benefício incorreto/inválido!"),
+            (this.variantToast = "danger");
+
+          this.showToast = true;
+
+          setTimeout(() => {
+            this.showToast = false;
+          }, 5000);
+        }
+      }
+    },
     setaFundamentacao(e) {
       // console.log(this.fundamentacao);
 
@@ -214,13 +263,12 @@ export default {
 
         const url = dev
           ? "http://localhost/teletrabalho/ajax/manter_fundamentacao.php"
-          : "../ajax/manter_fundamentacao.php";
-
-        this.$refs["modal-fundamentacoes"].show();
+          : "/ajax/manter_fundamentacao.php";
 
         const resp = doFetch(url, "POST", bodyData);
 
         resp.then((r) => {
+          this.$refs["modal-fundamentacoes"].show();
           // console.log(r.data);
           this.fundamentacoes = r.data;
           this.$emit("fetchedfundamentacao");
@@ -231,6 +279,7 @@ export default {
       this.$store.dispatch("changeEspecie", value); //set new value of especie
 
       // console.log("recovering especie");
+      this.$store.dispatch("changeEspecieExtenso", "Aguarde...");
 
       const bodyData = new FormData();
       bodyData.append("flag", "recupera_especie");
@@ -238,20 +287,28 @@ export default {
 
       const url = dev
         ? "http://localhost/teletrabalho/ajax/manter_fundamentacao.php"
-        : "../ajax/manter_fundamentacao.php";
+        : "/ajax/manter_fundamentacao.php";
 
       if (value.length == 2) {
         const esp_extenso = doFetch(url, "POST", bodyData);
 
-        esp_extenso.then((e) => {
-          // console.log(e.data);
-          this.$store.dispatch("changeEspecieExtenso", e.data);
-        });
+        esp_extenso
+          .then((e) => {
+            // console.log(e.data);
+            this.$store.dispatch("changeEspecieExtenso", e.data);
+          })
+          .catch((err) => {
+            alert(err);
+            this.$store.dispatch("changeEspecieExtenso", "");
+          });
       }
     },
   },
   directives: {
     mask,
+  },
+  components: {
+    ToastFactory,
   },
 };
 </script>
@@ -261,9 +318,32 @@ export default {
   cursor: not-allowed;
 }
 
-input[type="radio"] {
-  border: 1px;
+.radio-fundamenta {
   width: 2em;
   height: 2em;
+  margin-top: 15px;
+  padding-top: 10px;
+}
+
+.span-fundamenta {
+  /* padding-top: 10px; */
+  margin-top: 15px;
+  /* background-color: aquamarine; */
+  padding-left: 15px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.fundamenta-container {
+  display: flex;
+  flex-flow: row;
+  border: 1px solid black;
+  border-radius: 6px;
+  vertical-align: center;
+  padding: 10px;
+}
+
+.fundamentacoes {
+  vertical-align: center;
 }
 </style>
