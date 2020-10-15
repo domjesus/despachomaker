@@ -49,11 +49,11 @@
       </div>
 
       <div class="row mb-3 mt-3">
-        <div class="col col-md-2 mt-2">
+        <div class="col col-md-2 mt-2" v-if="especie != 99">
           <label for="esp">Esp:</label>
         </div>
 
-        <div class="col col-md-1">
+        <div class="col col-md-1" v-if="especie != 99">
           <input
             type="text"
             :value="especie"
@@ -62,7 +62,11 @@
           />
         </div>
 
-        <div class="col col-sm-1 mt-2 text-center">
+        <div class="col col-md-2 mt-2 text-center" v-if="especie == 99">
+          <label for="nb">Protocolo:</label>
+        </div>
+
+        <div class="col col-sm-1 mt-2 text-center" v-if="especie != 99">
           <label for="nb">NB:</label>
         </div>
 
@@ -143,7 +147,14 @@
         A carência comprovada foi de {{ tsCarencia }} contribuição(ões).
       </div>
       <div class="conclusao">
-        Considerando o exposto o benefício foi {{ conclusao.decisao }}
+        <p v-if="especie == 99">
+          Considerando o exposto o requerimento da certidão de tempo de
+          contribuição foi
+          {{ conclusao.decisao }}.
+        </p>
+        <p v-if="especie != 99">
+          Considerando o exposto o benefício foi {{ conclusao.decisao }}
+        </p>
       </div>
     </div>
 

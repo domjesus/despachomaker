@@ -152,6 +152,13 @@
       </div>
     </div>
     <div class="alert alert-danger" v-if="error">{{ errorMsg }}</div>
+
+    <ToastFactory
+      :message="messageToast"
+      :title="titleToast"
+      :variant="variantToast"
+      v-if="showToast"
+    />
   </div>
 </template>
 
@@ -165,6 +172,7 @@ import Observacoes from "./../components/TextAreaObservacoes.vue";
 import AuxButtons from "./../components/AuxButtons.vue";
 import { doFetch } from "./../../utils/FetchFactory.js";
 import { validaNb } from "./../../utils/validaNb.js";
+import ToastFactory from "./../components/utils/ToastFactory.vue";
 
 import { mask } from "vue-the-mask";
 
@@ -200,6 +208,10 @@ export default {
       textos: [],
       addNewUser: 0,
       isValidNb: false,
+      showToast: false,
+      messageToast: "",
+      titleToast: "",
+      variantToast: "",
     };
   },
   methods: {
@@ -217,15 +229,26 @@ export default {
     showFormToNewUser() {
       this.addNewUser = Math.random(1, 1000);
     },
+
+    localFactoryToast(msg, title, variant) {
+      this.messageToast = msg;
+      this.titleToast = title;
+      this.variantToast = variant;
+      this.showToast = true;
+
+      setTimeout(() => {
+        this.showToast = false;
+      }, 5000);
+    },
     fetchAuth() {
       const matricula = document.querySelector("#matricula").value;
 
       if (!matricula) {
-        this.$bvToast.toast(`Informe a matrícula!`, {
-          title: `Erro`,
-          variant: "danger",
-          solid: true,
-        });
+        const msgT = "Informe a matrícula!";
+        const titleT = "Erro!";
+        const variantT = "danger";
+
+        this.localFactoryToast(msgT, titleT, variantT);
 
         return;
       }
@@ -238,36 +261,23 @@ export default {
         ? "http://localhost/teletrabalho/ajax/manter_sessao_dados_usuario.php"
         : "/ajax/manter_sessao_dados_usuario.php";
 
-      // console.log(url);
-
       const method = "POST";
 
       this.showBlockUI("Carregando usuário!");
 
-      // setTimeout(() => {
-      //   console.log(user);
-      // }, 3000);
-
       const user = doFetch(url, method, bodyData);
       user
         .then((m) => {
-          // console.log("retorno BD: ");
-
-          // console.log(m.data);
-
           if (m.data) {
             this.$store.dispatch("changeUsuarioInfos", m.data);
 
             setCookie(m.data);
 
-            this.$bvToast.toast(
-              `Usuário '${m.data.usuario_nome}' recuperado com sucesso`,
-              {
-                title: `Bem vindo ${m.data.usuario_nome}`,
-                variant: "success",
-                solid: true,
-              }
-            );
+            const msgT = `Usuário '${m.data.usuario_nome}' recuperado com sucesso`;
+            const titleT = `Bem vindo ${m.data.usuario_nome}`;
+            const variantT = "success";
+
+            this.localFactoryToast(msgT, titleT, variantT);
 
             this.userAuth = true;
             this.error = false;
@@ -370,6 +380,7 @@ export default {
     Observacoes,
     AuxButtons,
     FontAwesomeIcon,
+    ToastFactory,
   },
   mounted() {
     // const user = this.getCookie("userNome");
@@ -428,9 +439,20 @@ export default {
 
     this.isValidNb = validaNb(this.nb);
 
-    if (!this.isValidNb) {
+    if (!this.isValidNb && this.especie != 99) {
       this.$bvToast.toast(`O número do benefício está inválido/incorreto`, {
         title: `NB incorreto/inválido`,
+        autoHideDelay: 5000,
+        variant: "danger",
+        appendToast: true,
+      });
+
+      return;
+    }
+
+    if (this.especie == 99 && this.nb.length != 21) {
+      this.$bvToast.toast(`O número da certidão está incompleto`, {
+        title: `Protocolo incorreto/inválido`,
         autoHideDelay: 5000,
         variant: "danger",
         appendToast: true,

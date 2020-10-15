@@ -38,15 +38,11 @@
         <b-input-group size="md" prepend="NB">
           <b-form-input
             name="numeroBeneficio"
-            :class="[
-              { 'border border-success alert alert-success': nbIsValid },
-              'border border-danger',
-            ]"
             id="numeroBeneficio"
             :value="numeroBeneficio"
             @keyup="vldNb($event.target.value)"
-            v-mask="'###.###.###-#'"
-            placeholder="000.000.000-0"
+            v-mask="trataMask"
+            :placeholder="trataPlaceHolder(especie)"
           ></b-form-input>
         </b-input-group>
         <ToastFactory
@@ -142,7 +138,15 @@
       hide-footer
     >
       <div id="fundamentacoes" class="fundamentacoes">
-        <div v-for="(fund, i) in fundamentacoes" :key="i">
+        <label for="filter_fundamentacoes">Pesquisar:</label>
+        <input
+          type="text"
+          name="filter_fundamentacoes"
+          @keyup="filterFundamentacoes($event.target.value)"
+          class="form-control mb-5"
+          placeholder="Digite o texto para filtrar!"
+        />
+        <div v-for="(fund, i) in fundamentacoesFiltered" :key="i">
           <div class="fundamenta-container">
             <input
               type="radio"
@@ -179,6 +183,8 @@ export default {
         { value: "INDEF", text: "Indeferimento" },
       ],
       fundamentacoes: "",
+      fundamentacoesFiltered: "",
+
       conclusao: {
         descricao: "",
         norma: "",
@@ -202,6 +208,11 @@ export default {
       ts_dias: "getDias",
       ts_carencia: "getCarencia",
     }),
+    trataMask() {
+      if (this.especie == 99) return "########.#.#####/##-#";
+
+      return "###.###.###-#";
+    },
   },
   methods: {
     ...mapActions([
@@ -214,8 +225,26 @@ export default {
       "changeDias",
       "changeCarencia",
     ]),
+    filterFundamentacoes(valueFilter) {
+      // console.log(valueFilter);
+      this.fundamentacoesFiltered = this.fundamentacoes.filter(
+        (fund) =>
+          fund.descricao.indexOf(valueFilter) >= 0 ||
+          fund.fundamentacao.indexOf(valueFilter) >= 0
+      );
+    },
+    trataPlaceHolder() {
+      if (this.especie == 99) return "00000.0.00000/00-0";
+
+      return "000.000.000-0";
+    },
     vldNb(value) {
-      if (value.length == 13) {
+      if (value.length == 21 && this.especie == 99) {
+        this.$store.dispatch("changeNb", value);
+        this.nbIsValid = true;
+      }
+
+      if (value.length == 13 && this.especie != 99) {
         this.nbIsValid = validaNb(value);
 
         if (this.nbIsValid) {
@@ -270,7 +299,7 @@ export default {
         resp.then((r) => {
           this.$refs["modal-fundamentacoes"].show();
           // console.log(r.data);
-          this.fundamentacoes = r.data;
+          this.fundamentacoes = this.fundamentacoesFiltered = r.data;
           this.$emit("fetchedfundamentacao");
         });
       }
